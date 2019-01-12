@@ -5,7 +5,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import com.line.ic.po.SignInPo;
+import com.line.ic.po.SignCredentialPo;
 import com.line.ic.svc.UserSvc;
 
 @RestController
@@ -27,8 +27,8 @@ public class UserController {
     }
 
     @GetMapping("signIn")
-    private SignInPo signIn(String uname, String pwd) {
-        SignInPo sign = userSvc.login(uname, pwd);
+    private SignCredentialPo signIn(String uname, String pwd) {
+        SignCredentialPo sign = userSvc.signIn(uname, pwd);
         if (sign != null) {
             sign.setPwd(null);
         }

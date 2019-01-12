@@ -2,7 +2,7 @@ package com.line.ic.po;
 
 import java.util.Date;
 
-public class SignInPo {
+public class SignCredentialPo {
     private Long id;
 
     private String uname;
