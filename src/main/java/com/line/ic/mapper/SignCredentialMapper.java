@@ -2,7 +2,7 @@ package com.line.ic.mapper;
 
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
-import com.line.ic.po.SignCredentialPo;
+import com.line.ic.domain.po.SignCredentialPo;
 
 @Mapper
 public interface SignCredentialMapper {

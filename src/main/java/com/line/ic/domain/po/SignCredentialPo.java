@@ -1,4 +1,4 @@
-package com.line.ic.po;
+package com.line.ic.domain.po;
 
 import java.util.Date;
 

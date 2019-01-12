@@ -5,7 +5,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import com.line.ic.po.SignCredentialPo;
+import com.line.ic.domain.po.SignCredentialPo;
 import com.line.ic.svc.UserSvc;
 
 @RestController
