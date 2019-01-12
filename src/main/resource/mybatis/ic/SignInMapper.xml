@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.line.ic.mapper.SignInMapper" >
+  <resultMap id="BaseResultMap" type="com.line.ic.po.SignInPo" >
+    <id column="id" property="id" jdbcType="BIGINT" />
+    <result column="uname" property="uname" jdbcType="VARCHAR" />
+    <result column="pwd" property="pwd" jdbcType="VARCHAR" />
+    <result column="ctime" property="ctime" jdbcType="DATE" />
+    <result column="last_login" property="lastLogin" jdbcType="DATE" />
+  </resultMap>
+<sql id="Base_Column_List" >
+  id, uname, pwd, ctime, last_login
+</sql>
+
+<select id="selectById" resultMap="BaseResultMap" parameterType="long" >
+  select 
+  <include refid="Base_Column_List" />
+  from ic_sign_in
+  where id = #{id,jdbcType=BIGINT}
+</select>
+
+<select id="selectByUname" resultMap="BaseResultMap">
+  select 
+  <include refid="Base_Column_List" />
+  from ic_sign_in
+  where uname = #{uname,jdbcType=VARCHAR} 
+</select>
+
+<insert id="insert" parameterType="com.line.ic.po.SignInPo" >
+  insert into ic_sign_in (id, uname, pwd, 
+    ctime, last_login)
+  values (#{id,jdbcType=BIGINT}, #{uname,jdbcType=VARCHAR}, #{pwd,jdbcType=VARCHAR}, 
+    #{ctime,jdbcType=DATE}, #{lastLogin,jdbcType=DATE})
+</insert>
+
+<update id="updateByPrimaryKeySelective" parameterType="com.line.ic.po.SignInPo" >
+  update ic_sign_in
+  <set >
+    <if test="uname != null" >
+      uname = #{uname,jdbcType=VARCHAR},
+    </if>
+    <if test="pwd != null" >
+      pwd = #{pwd,jdbcType=VARCHAR},
+    </if>
+    <if test="ctime != null" >
+      ctime = #{ctime,jdbcType=DATE},
+    </if>
+    <if test="lastLogin != null" >
+      last_login = #{lastLogin,jdbcType=DATE},
+    </if>
+  </set>
+  where id = #{id,jdbcType=BIGINT}
+</update>
+
+</mapper>
