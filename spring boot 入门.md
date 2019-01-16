@@ -113,6 +113,26 @@ public class UserController {
 
 >Hello user!
 
+## junit测试
+```
+<dependency>
+	<groupId>org.springframework.boot</groupId>
+	<artifactId>spring-boot-starter-test</artifactId>
+	<scope>test</scope>
+</dependency>
+```
+```
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = Starter.class)
+public class JunitTest {
+    @Autowired
+    private UserService userSvc;
+    @Test
+    public void test1() {
+
+    }
+}
+```
 
 ## 整合mybatis mysql
 - 引入依赖jar
@@ -265,6 +285,180 @@ public interface Mapper{
 - 数据库IO测试
 从controller 到 service 到dao 到数据库，一整套的测试
 
+# 整合mybatis h2
+- jar包依赖 (与mysql相比)
+
+```
+<dependency>
+	<groupId>com.h2database</groupId>
+	<artifactId>h2</artifactId>
+	<version>1.4.196</version>
+</dependency>
+```
+- [h2 数据库的几种连接模式](http://www.h2database.com/html/features.html#connection_modes)
+ - 嵌入式，分内存、文件两种
+ - 服务端
+
+
+- application.properties修改
+
+```
+#h2 结构和数据
+druid.url==jdbc:h2:~/.h2/ic
+druid.driver-class-name=org.h2.Driver
+#建表数据，内存模式使用，其他模式不用
+spring.datasource.schema=classpath:db/schema.sql 
+#表初始化数据，内存模式使用，其他模式不用
+spring.datasource.data=classpath:db/data.sql
+
+#console 辅助配置
+#进行该配置后，h2 web consloe就可以在远程访问了。否则只能在本机访问。
+spring.h2.console.settings.web-allow-others=true
+#进行该配置，你就可以通过YOUR_URL/h2-console访问h2 web consloe。YOUR_URL是你程序的访问URl。
+spring.h2.console.path=/h2-console
+#进行该配置，程序开启时就会启动h2 web consloe。当然这是默认的，如果你不想在启动程序时启动h2 web consloe，那么就设置为false。
+spring.h2.console.enabled=true
+```
+## hibernate validator参数校验
+
+- 用在controller上
+
+```
+// 验证未通过，http返回码400
+// 这里使用@Valid、@Validated都有效
+@getMapping("user")
+String listUser(@Valid UserPaginQuery query) {
+//
+}
+```
+
+- 用在其他class如service上
+
+```
+// 验证未通过，javax.validation.ConstraintViolationException异常抛出
+// 这里只能clzz使用@Validated，方法上使用@Valid或者@NotNull等
+@Service
+@Validated
+public class TestSvc {
+
+    public String hi(@Valid SignInReq req) {
+        return "hi: " + req.getUname();
+    }
+
+    public String hi(@Size(min = 8, max = 11) String uname) {
+        return "hi: " + uname;
+    }
+}
+```
+
+- 暂不能在controller使用@Size(min = 8, max = 11) String uname校验参数
+
+```
+	// 无效
+    @GetMapping("ano2")
+    private String test2(@Validated @Size(min = 8, max = 11) String uname) {
+        return "Hello test2!";
+    }
+```
+## springboot 的异常结果处理，配合hibernate validator校验使用
+>springboot的全局异常，都交由ErrorController的实现类处理，默认实现者是BasicErrorController
+
+```
+// 简单的处理，但是没有错误信息
+@RestController
+@RequestMapping("error")
+public class ErrorHandle implements ErrorController {
+
+    @Override
+    public String getErrorPath() {
+
+        return "error";
+    }
+
+    @GetMapping("")
+    private String test() {
+        return "Hello User!";
+    }
+
+}
+```
+
+> 错误信息的具体定位处理，则需要注入ErrorProperties，可以参考BasicErrorController
+
+```
+@RequestMapping("${server.error.path:${error.path:/error}}")
+public class ErrorHandle extends AbstractErrorController {
+
+    private final ErrorProperties errorProperties;
+
+    @Autowired
+    public ErrorHandle(ErrorAttributes errorAttributes, ServerProperties serverProperties) {
+        super(errorAttributes, Collections.emptyList());
+        errorProperties = serverProperties.getError();
+    }
+
+    @Override
+    public String getErrorPath() {
+        return errorProperties.getPath();
+    }
+
+    @RequestMapping
+    @ResponseBody
+    public ResponseEntity<MsgDto> error(HttpServletRequest request) {
+        HttpStatus status = getStatus(request);
+
+        MsgDto dto = new MsgDto();
+        dto.setStatus(status.value() / 100 * 100);
+        dto.setMessage(getErrorMsg(request));
+
+        return new ResponseEntity<>(dto, status);
+    }
+
+    private String getErrorMsg(HttpServletRequest request) {
+        Throwable error = getAttribute(request, DefaultErrorAttributes.class.getName() + ".ERROR");
+        if (error == null) {
+            error = getAttribute(request, "javax.servlet.error.exception");
+        }
+
+        if (error != null) {
+            while (error instanceof ServletException && error.getCause() != null) {
+                error = ((ServletException) error).getCause();
+            }
+        }
+
+        BindingResult result = extractBindingResult(error);
+        if (result != null) {
+            if (!result.getAllErrors().isEmpty()) {
+                return result.getAllErrors().get(0).getDefaultMessage();
+            } else {
+                return "服务忙，请稍后再试";
+            }
+        }
+
+        String msg = error.getMessage();
+        if (StringUtils.isEmpty(msg)) {
+            msg = getAttribute(request, "javax.servlet.error.message");
+        }
+
+        return StringUtils.isEmpty(msg) ? "服务忙，请稍后再试" : msg;
+    }
+
+    private BindingResult extractBindingResult(Throwable error) {
+        if (error instanceof BindingResult) {
+            return (BindingResult) error;
+        }
+        if (error instanceof MethodArgumentNotValidException) {
+            return ((MethodArgumentNotValidException) error).getBindingResult();
+        }
+        return null;
+    }
+
+    @SuppressWarnings("unchecked")
+    private <T> T getAttribute(HttpServletRequest request, String name) {
+        return (T) request.getAttribute(name);
+    }
+}
+```
 ## 事务
 >spring boot无xml化，只用在需要事务的类、方法上增加@Transactional注解即可
 
@@ -289,27 +483,6 @@ public interface Mapper{
 - TransactionDefinition.PROPAGATION_MANDATORY：如果当前存在事务，则加入该事务；如果当前没有事务，则抛出异常。
 - TransactionDefinition.PROPAGATION_NESTED：如果当前存在事务，则创建一个事务作为当前事务的嵌套事务来运行；如果当前没有事务，则该取值等价于TransactionDefinition.PROPAGATION_REQUIRED。
 
-
-## junit测试
-```
-<dependency>
-	<groupId>org.springframework.boot</groupId>
-	<artifactId>spring-boot-starter-test</artifactId>
-	<scope>test</scope>
-</dependency>
-```
-```
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = Starter.class)
-public class JunitTest {
-    @Autowired
-    private UserService userSvc;
-    @Test
-    public void test1() {
-
-    }
-}
-```
 
 
 
