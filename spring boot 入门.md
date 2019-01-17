@@ -460,6 +460,14 @@ public class ErrorHandle extends AbstractErrorController {
 }
 ```
 ## 事务
+
+```
+<dependency>
+	<groupId>org.aspectj</groupId>
+	<artifactId>aspectjweaver</artifactId>
+	<version>${aspectjweaver}</version>
+</dependency>
+```
 >spring boot无xml化，只用在需要事务的类、方法上增加@Transactional注解即可
 
 ### 事务隔离级别

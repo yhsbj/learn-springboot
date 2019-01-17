@@ -2,6 +2,8 @@ package com.line.ic.controller;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Size;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -35,5 +37,11 @@ public class TestController {
     @GetMapping("ano2")
     private String test2(@Validated @Size(min = 8, max = 11) String uname) {
         return "Hello test2!";
+    }
+
+    public static void main(String[] args) {
+        Logger log = LoggerFactory.getLogger(TestController.class);
+        log.info("test info");
+        log.error("test info");
     }
 }
