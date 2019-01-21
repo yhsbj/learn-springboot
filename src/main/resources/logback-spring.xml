@@ -1,32 +1,3 @@
-@[spring boot完善]()
-
-# spring boot完善
-
-## 日志组件
-
-- slf4j 切面抽象
-
-```
-Logger log = LoggerFactory.getLogger(TestLog4J.class);
-log.info("info {}", "boy!");
-log.debug("debuging...");
-```
-
-- logback spring boot默认日志组件
-
-> [https://logback.qos.ch/manual/layouts.html](https://logback.qos.ch/manual/layouts.html)
-
-```
-<dependency>
-	<groupId>ch.qos.logback</groupId>
-	<artifactId>logback-classic</artifactId>
-	<version>1.2.3</version>
-</dependency>
-```
-
-- logback.xml
-
-```
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- debug="true" : 打印logback内部状态（默认当logback运行出错时才会打印内部状态 ），配置该属性后打印条件如下（同时满足）： 
 	1、找到配置文件 2、配置文件是一个格式正确的xml文件 也可编程实现打印内部状态，例如： LoggerContext lc = (LoggerContext) 
@@ -64,8 +35,6 @@ log.debug("debuging...");
 		</encoder>
 	</appender>
 
-<!-- springProfile 在application.properties先加载时有用。 
-  加载优先级 logback > application > logback-spring -->
 	<springProfile name="prod">
 		<!-- logger使用匹配度最大的，降级到root，找到logger为止 -->
 		<!-- addtivity:是否向上级loger传递打印信息。默认是true。 -->
@@ -83,47 +52,3 @@ log.debug("debuging...");
 		</root>
 	</springProfile>
 </configuration>
-```
-
-## 关于测试，mock，生产多环境的配置问题
-
-- application.properties
-
->spring.profiles.active=@profileActive@
-
-- application-dev.properties
-
-- application-test.properties
-
-- application-prod.properties
-
-- logback-spring.xml
-
-- maven pom.xml 加载多环境文件
-
-```
-<!--
-第一个resource加载目录下不符合application*.properties的所有资源文件
-第一个resource加载目录下只符合两条include的资源文件
--->
-<build>
-		<resources>
-			<resource>
-				<directory>src/main/resources</directory>
-				<excludes>
-					<exclude>application*.properties</exclude>
-				</excludes>
-			</resource>
-			<resource>
-				<filtering>true</filtering>
-				<directory>src/main/resources</directory>
-				<includes>
-					<include>application-${profileActive}.properties</include>
-					<include>application.properties</include>
-				</includes>
-			</resource>
-		</resources>
-<build>
-```
-
-

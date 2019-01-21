@@ -41,5 +41,63 @@
 			<version>1.0.15</version>
 		</dependency>
 	</dependencies>
+	<profiles>
+		<profile>
+			<id>test</id>
+			<properties>
+				<!-- 环境标识，需要与配置文件的名称相对应 -->
+				<profileActive>test</profileActive>
+			</properties>
+			<activation>
+				<!-- 默认环境 -->
+				<activeByDefault>false</activeByDefault>
+			</activation>
+		</profile>
+		<profile>
+			<id>prod</id>
+			<properties>
+				<profileActive>prod</profileActive>
+			</properties>
+			<activation>
+				<!-- 默认环境 -->
+				<activeByDefault>true</activeByDefault>
+			</activation>
+		</profile>
+	</profiles>
+	<build>
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+				<excludes>
+					<exclude>application*.properties</exclude>
+				</excludes>
+			</resource>
+			<resource>
+				<filtering>true</filtering>
+				<directory>src/main/resources</directory>
+				<includes>
+					<include>application-${profileActive}.properties</include>
+					<include>application.properties</include>
+				</includes>
+			</resource>
+		</resources>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<configuration>
+					<archive>
+						<manifest>
+							<mainClass>com.huoli.jr.sp.PortalStart</mainClass>
+							<!-- 入口程序 -->
+							<addClasspath>true</addClasspath>
+							<!-- 添加依赖jar路径 -->
+							<classpathPrefix>lib/</classpathPrefix>
+						</manifest>
 
+					</archive>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
 </project>

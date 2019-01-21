@@ -15,11 +15,14 @@ import com.line.ic.domain.req.SignInReq;
 @RequestMapping("test")
 public class TestController {
 
+    private static final Logger log = LoggerFactory.getLogger(TestController.class);
+
     @Autowired
     private TestSvc svc;
 
     @GetMapping("ano")
     private String test(@Valid SignInReq req) {
+        log.info("test log info");
         return "Hello User!";
     }
 
@@ -39,9 +42,4 @@ public class TestController {
         return "Hello test2!";
     }
 
-    public static void main(String[] args) {
-        Logger log = LoggerFactory.getLogger(TestController.class);
-        log.info("test info");
-        log.error("test info");
-    }
 }
