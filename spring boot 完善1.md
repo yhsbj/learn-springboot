@@ -126,4 +126,79 @@ log.debug("debuging...");
 <build>
 ```
 
+## springboot jackson配置
+
+- Date的配置
+
+```
+# 时间转化为long型
+spring.jackson.serialization.write-dates-as-timestamps=true
+```
+```
+# 时间转化为相关格式
+spring.jackson.serialization.write-dates-as-timestamps=true
+spring.jackson.time-zone=GMT+8
+```
+或者
+```
+	@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    private Date curr;
+```
+
+- 空-> ""   |  空 -> []
+
+> 未找到spring的支持配置，如下是自定义增加部分
+
+```
+//仿照MappingJackson2HttpMessageConverter的bean提供，其中增加ObjectMapper的key
+@Configuration
+public class MappingJackson2HttpMessageConverterConfiguration {
+
+    @Bean
+    public MappingJackson2HttpMessageConverter mappingJackson2HttpMessageConverter(ObjectMapper objectMapper) {
+        objectMapper.setSerializerFactory(objectMapper.getSerializerFactory().withSerializerModifier(new BeanSerializerModifier() {
+
+            private JsonSerializer<Object> nullJson = new JsonSerializer<Object>() {
+
+                @Override
+                public void serialize(Object value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
+                    gen.writeString("");
+                }
+            };
+
+            private JsonSerializer<Object> nullArr = new JsonSerializer<Object>() {
+
+                @Override
+                public void serialize(Object value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
+                    if (value == null) {
+                        gen.writeStartArray();
+                        gen.writeEndArray();
+                    }
+                }
+            };
+
+            @Override
+            public List<BeanPropertyWriter> changeProperties(SerializationConfig config, BeanDescription beanDesc, List<BeanPropertyWriter> beanProperties) {
+
+                for (int i = 0; i < beanProperties.size(); i++) {
+                    BeanPropertyWriter writer = beanProperties.get(i);
+                    // 判断字段的类型，如果是array，list，set则注册nullSerializer
+                    JavaType type = writer.getType();
+                    if (type.isArrayType() || type.isCollectionLikeType()) {
+                        // 给writer注册一个自己的nullSerializer
+                        writer.assignNullSerializer(nullArr);
+                    } else {
+                        writer.assignNullSerializer(nullJson);
+                    }
+                }
+
+                return super.changeProperties(config, beanDesc, beanProperties);
+            }
+
+        }));
+
+        return new MappingJackson2HttpMessageConverter(objectMapper);
+    }
+}
+```
 
